@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import unquote
 import re
 import time
-import requests 
+import requests
 
 
 class BackupController:
@@ -19,11 +19,11 @@ class BackupController:
             options.add_argument("--headless")
         self.driver = webdriver.Chrome(driver_location, options=options)
         self.driver.implicitly_wait(implicit_wait)
-    
+
     def login(self,user_name,password):
         login_url=f'{self.login_url}/?un={user_name}&pw={password}'
         self.driver.get(login_url)
-    
+
     def detect_lightning(self,timeout):
         try:
             WebDriverWait(self.driver, timeout).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//div[contains(@class,'iframe-parent')]/iframe")))
@@ -32,13 +32,13 @@ class BackupController:
         except TimeoutException:
             print("Classic Detected")
             return 0
-    
+
     def extract_file_info(self,link):
         if self.is_lightning:
             link=unquote(link)
             extract_link = re.search(r'srcUp\(\'(.*?)\'\)',link)
             link= extract_link.group(1)
-        
+
         extract_file_name = re.search(r'fileName=(.*?)&id',link)
         file_name= extract_file_name.group(1)
         return link,file_name
@@ -48,14 +48,14 @@ class BackupController:
         with requests.get(url, stream=True, cookies=cookies) as r:
             r.raise_for_status()
             with open(download_location+file_name, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192): 
+                for chunk in r.iter_content(chunk_size=8192):
                     # If you have chunk encoded response uncomment if
                     # and set chunk_size parameter to None.
-                    #if chunk: 
+                    #if chunk:
                     f.write(chunk)
 
     def download_backups(self,download_location,backup_url,cookies=None,user_name=None,password=None):
-        
+
         if cookies is None:
             if (user_name is not None and password is not None):
                 print('Logging in')
@@ -64,9 +64,10 @@ class BackupController:
             else:
                 raise ValueError("Username and Password Argument is Missing")
         print('Navigate to Backup URL')
+        time.sleep(5) ## wait 5 seconds
         self.driver.get(backup_url)
         time.sleep(5) ## wait 5 seconds
-        timeout=5 
+        timeout=5
         self.is_lightning=self.detect_lightning(timeout) ##check lightning experience
 
         soup=BeautifulSoup(self.driver.page_source, 'lxml') ##prepare the source
@@ -81,11 +82,3 @@ class BackupController:
             self.download_file(file_url,cookies,file_name,download_location)
 
         self.driver.quit()
-
-        
-    
-    
-
-        
-
-            

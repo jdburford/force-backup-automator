@@ -2,8 +2,8 @@ from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
-    
-setup(name='force_backup_automator',
+
+setup(name='force_backup_automator_1',
       version='1.4',
       description='Automates download of the Export Data Weekly Service',
       long_description=long_description,
